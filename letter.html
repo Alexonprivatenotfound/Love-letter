@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>💌 A Little Game for You</title>
+  <style>
+    :root{
+      --bg1: #111218;
+      --bg2: #171923;
+      --paper: #fff8ec;
+      --ink: #3b3b3b;
+      --accent: #ff2d55;
+      --accent-2: #ff7a8f;
+      --shadow: 0 30px 80px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+
+    /* Base */
+    *{ box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(1200px 800px at 50% 20%, var(--bg2), var(--bg1));
+      color: #fff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      overflow: hidden;
+    }
+
+    .screen{ display: none; width: 100%; height: 100%; }
+    .active{ display: grid; place-items: center; }
+
+    /* Envelope (intro) */
+    .wrap{ display: grid; place-items: center; gap: 18px; }
+    .card{ width: min(92vw, 300px); perspective: 1200px; }
+    .envelope{ position: relative; aspect-ratio: 4/3; filter: drop-shadow(var(--shadow)); }
+    .back{ position: absolute; inset: 0; border-radius: var(--radius); background: linear-gradient(180deg, #ec4c58, #d6414c); }
+    .front{ position: absolute; inset: auto 0 0 0; height: 68%; background: linear-gradient(180deg, #d6414c, #ec4c58); clip-path: polygon(0 0, 50% 70%, 100% 0, 100% 100%, 0 100%); border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius); z-index: 2; }
+    .flap{ position: absolute; inset: 0 0 auto 0; height: 64%; background: linear-gradient(180deg, #d6414c, #ec4c58); clip-path: polygon(0 0, 50% 78%, 100% 0, 100% 100%, 0 100%); border-top-left-radius: var(--radius); border-top-right-radius: var(--radius); z-index: 3; }
+    .seal{ position: absolute; left: 50%; top: 44%; transform: translate(-50%,-50%); width: 46px; height: 46px; border-radius: 50%; background: #ffb3bd; box-shadow: inset 0 6px 14px rgba(255,255,255,.45), 0 10px 26px rgba(0,0,0,.35); z-index: 4; }
+    .cta{ font-size: .95rem; opacity: .85; text-align: center; }
+    .tap{ display: inline-flex; align-items: center; gap: .4ch; background: rgba(255,255,255,.08); padding: 10px 14px; border-radius: 999px; box-shadow: 0 6px 16px rgba(0,0,0,.25); cursor: pointer; user-select: none; }
+
+    /* Game */
+    #game{ position: relative; width: 100%; height: 100%; overflow: hidden; background: linear-gradient(180deg, #ffdde1, #ee9ca7); }
+    #score{ position: absolute; top: 12px; left: 12px; font-weight: 700; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,.35); }
+    .heart{ position: absolute; width: 32px; height: 32px; background: var(--accent); transform: rotate(-45deg); border-radius: 8px; animation: fall linear; cursor: pointer; box-shadow: 0 6px 12px rgba(0,0,0,.25); }
+    .heart::before, .heart::after{ content: ""; position: absolute; width: 32px; height: 32px; background: var(--accent); border-radius: 50%; }
+    .heart::before{ top: -16px; left: 0; }
+    .heart::after{ left: 16px; top: 0; }
+    @keyframes fall{ from{ top: -40px; } to{ top: 100vh; } }
+
+    #message{ position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-weight: 800; font-size: 1.4rem; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.45); background: rgba(0,0,0,.45); visibility: hidden; padding: 20px; }
+    #message button{ margin-top: 14px; padding: 10px 18px; background: var(--accent); color: #fff; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; }
+
+    /* Letter */
+    .letter{
+      --pad: 18px;
+      width: min(92vw, 340px);
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(0,0,0,.22);
+      padding: var(--pad);
+      line-height: 1.55;
+    }
+    .letter header{ font-weight: 800; margin-bottom: 10px; letter-spacing: .2px; }
+    .sig{ margin-top: 14px; font-weight: 600; color: #6b6b6b; }
+
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce){
+      .heart{ animation-duration: 6s !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- SCREEN 1: Envelope intro -->
+  <section id="intro" class="screen active" aria-label="Envelope intro">
+    <div class="wrap">
+      <div class="card">
+        <div class="envelope" id="startGame" role="button" aria-label="Tap to start the game" tabindex="0">
+          <div class="back"></div>
+          <div class="front"></div>
+          <div class="flap"></div>
+          <div class="seal"></div>
+        </div>
+      </div>
+      <div class="cta">
+        <span class="tap">tap to opent the letter</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 2: Catch-the-hearts game -->
+  <section id="gameScreen" class="screen" aria-label="Catch hearts game">
+    <div id="game" role="application">
+      <div id="score" aria-live="polite">Hearts: 0 / 10</div>
+      <div id="message">
+        <div>
+          You didn't think I'd make this easy did you?<br/>
+          <button id="showLetter" aria-label="Open the letter">Open the Letter</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 3: Text-only letter -->
+  <section id="letterScreen" class="screen" aria-label="Letter">
+    <article class="letter" role="document">
+      Dear Zhana,
+      <br/><br/>
+
+I feel so weird writing this, and if someone knew I was writing a letter to a girl who lives in another continent, they would think I’m crazy, and they’d probably be right. Because after all, I am crazy for you. 
+<br/><br/>
+I still sometimes catch glimpses in my memory of the time we spent, and I remember it very vividly. I remember the way my fingers ran through your hair insecurely, and you pointing to your scalp giving me the reassurance I needed. I remembered holding your hand for the first time, feeling my stomach sink all the way to the ground, and mumbling illogical statements to myself because I felt I was in heaven. I remember the first night we met, when I couldn’t think about anything but you on the way back home.
+<br/><br/>
+I know I joke a lot about us, but maybe in another universe where my words have more meaning than they do, you’d believe me when I tell you that I'd give anything to hold you again, and to kiss your perhaps big forehead, and to tease you about it. I'd give anything to tell you a corny line again, to count our shoulders and to find comfort in your loving hugs once more
+<br/><br/>
+
+I know I’m making things harder between us, and I genuinely don’t want to hurt you. But I had to get this off my chest. I like you, Zhana, and I’ll do whatever it takes to see you again.
+I’d drive there if I could, and even if walking was the only option, I’d start now, For the hope of eventually seeing you again, would give me infinite energy. You're exactly what I was looking for, and perhaps fate decided to split us with physical distance. But I know it can't destroy my feelings for you. When I started writing this, I had no intention of sending it. But I think I deserve to live in peace with myself, knowing that despite everything, close to be truthful with the way I feel.
+      <br/><br/>
+      I hope I never have to truly say goodbye to you,
+      <div class="sig">With love,<br/>Alex</div>
+    </article>
+  </section>
+
+  <script>
+    // Screen handling
+    const intro = document.getElementById('intro');
+    const gameScreen = document.getElementById('gameScreen');
+    const letterScreen = document.getElementById('letterScreen');
+    const startGameEl = document.getElementById('startGame');
+
+    const game = document.getElementById('game');
+    const scoreEl = document.getElementById('score');
+    const message = document.getElementById('message');
+    const showLetter = document.getElementById('showLetter');
+
+    let score = 0;
+    const target = 10;
+    let spawner;
+
+    function switchTo(el){
+      for (const s of [intro, gameScreen, letterScreen]) s.classList.remove('active');
+      el.classList.add('active');
+    }
+
+    function beginGame(){
+      switchTo(gameScreen);
+      score = 0;
+      scoreEl.textContent = `Hearts: ${score} / ${target}`;
+      message.style.visibility = 'hidden';
+      clearInterval(spawner);
+      spawner = setInterval(spawnHeart, 800);
+    }
+
+    startGameEl.addEventListener('click', beginGame);
+    startGameEl.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); beginGame(); }});
+
+    function spawnHeart(){
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      const maxX = Math.max(0, window.innerWidth - 40);
+      heart.style.left = Math.random() * maxX + 'px';
+      heart.style.animationDuration = (3 + Math.random() * 2) + 's';
+
+      heart.addEventListener('click', () => catchHeart(heart));
+      // Keyboard accessibility: allow focusing and pressing Enter
+      heart.setAttribute('tabindex','0');
+      heart.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); catchHeart(heart); }});
+
+      game.appendChild(heart);
+      setTimeout(() => heart.remove(), 5200);
+    }
+
+    function catchHeart(heart){
+      if(!heart.isConnected) return;
+      heart.remove();
+      score++;
+      scoreEl.textContent = `Hearts: ${score} / ${target}`;
+      if(score >= target){
+        clearInterval(spawner);
+        message.style.visibility = 'visible';
+      }
+    }
+
+    showLetter.addEventListener('click', ()=> switchTo(letterScreen));
+  </script>
+</body>
+</html>
