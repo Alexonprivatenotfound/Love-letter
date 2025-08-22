@@ -26,7 +26,7 @@
       color: #fff;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
       -webkit-tap-highlight-color: transparent;
-      overflow: hidden;
+      overflow: auto;
     }
 
     .screen{ display: none; width: 100%; height: 100%; }
@@ -44,7 +44,7 @@
     .tap{ display: inline-flex; align-items: center; gap: .4ch; background: rgba(255,255,255,.08); padding: 10px 14px; border-radius: 999px; box-shadow: 0 6px 16px rgba(0,0,0,.25); cursor: pointer; user-select: none; }
 
     /* Game */
-    #game{ position: relative; width: 100%; height: 100%; overflow: hidden; background: linear-gradient(180deg, #ffdde1, #ee9ca7); }
+    #game{ position: relative; width: 100%; height: 100%; overflow: auto; background: linear-gradient(180deg, #ffdde1, #ee9ca7); }
     #score{ position: absolute; top: 12px; left: 12px; font-weight: 700; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,.35); }
     .heart{ position: absolute; width: 32px; height: 32px; background: var(--accent); transform: rotate(-45deg); border-radius: 8px; animation: fall linear; cursor: pointer; box-shadow: 0 6px 12px rgba(0,0,0,.25); }
     .heart::before, .heart::after{ content: ""; position: absolute; width: 32px; height: 32px; background: var(--accent); border-radius: 50%; }
